@@ -16,13 +16,16 @@ from .profiles import ClusterResult, NMFResult, cluster_profiles, fit_nmf
 from .recommend import recommend_all, recommend_next
 from .schema import SchemaError, validate_logs, validate_tasks
 from .simulate import SimulatedStudy, simulate_logs, simulate_pilot
+from .stats import AncovaResult, ancova
 
 __all__ = [
+    "AncovaResult",
     "ClusterResult",
     "NMFResult",
     "SchemaError",
     "SimulatedStudy",
     "__version__",
+    "ancova",
     "cluster_profiles",
     "fit_nmf",
     "recommend_all",
