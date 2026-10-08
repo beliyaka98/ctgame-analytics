@@ -50,6 +50,7 @@ ready-built wheel.
 ctgame simulate --out data                     # synthetic logs.csv, tasks.csv, pilot.csv
 ctgame profile  --logs data/logs.csv --tasks data/tasks.csv --out results
 ctgame recommend --logs data/logs.csv --student S001 --n 3
+ctgame evaluate --logs data/logs.csv --components 1 2 3 4 5   # hold-out error per k
 ctgame ancova   --data data/pilot.csv
 ctgame report   --data data --out site         # everything + site/index.html
 ```
@@ -98,12 +99,25 @@ code 2). See [docs/data-format.md](docs/data-format.md) for details and privacy 
 | Latent factors | NMF with multiplicative updates and a mask (Lee & Seung, 2001) | Success rates are non-negative, and non-negative factors are easy to read as skill groups. The mask keeps "not tried" apart from "failed"; `sklearn.decomposition.NMF` needs a complete matrix. |
 | Profiles | Standardise → PCA (90% of variance) → K-means, k by silhouette | PCA removes correlated noise. K-means is simple and fast, and the silhouette score chooses k without manual tuning. |
 | Recommendation | Untried task with predicted success closest to 0.7 | Keeps tasks in the zone of proximal development: hard enough to learn from, but usually solvable. |
+| Validation | Hide 20% of the observed cells, fit on the rest, compare the RMSE with a task-mean baseline | Shows that personalisation helps, and chooses the number of factors from data instead of by eye. |
 | Evaluation | ANCOVA `post ~ group + pre`, type II sums of squares | Adjusts for different starting levels of the groups. It also checks equal regression slopes and normal residuals (Shapiro–Wilk). |
+
+On the default simulated study (3 true profiles), the hold-out check picks **3 factors**. Their
+prediction error is **14.8% lower** than the task-mean baseline (RMSE 0.373 vs 0.438):
+
+```text
+ n_components  rmse_nmf  rmse_baseline  improvement
+            1    0.4371         0.4376       0.0010
+            2    0.3901         0.4376       0.1085
+            3    0.3727         0.4376       0.1482
+            4    0.3918         0.4376       0.1045
+            5    0.4069         0.4376       0.0701
+```
 
 ## Project layout
 
 ```text
-src/ctgame/         package: schema, simulate, features, profiles, recommend, stats, viz, report, cli
+src/ctgame/         package: schema, simulate, features, profiles, recommend, evaluate, stats, viz, report, cli
 tests/              pytest suite (unit, cross-checks against scikit-learn/numpy, end-to-end CLI)
 requirements/       oldest supported dependency versions (tested in CI)
 docs/               data format and privacy rules
