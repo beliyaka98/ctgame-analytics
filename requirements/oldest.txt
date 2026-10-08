@@ -1,0 +1,9 @@
+# Oldest dependency versions that pyproject.toml promises to support.
+# CI installs exactly these on Python 3.11 to prove that the lower bounds are true.
+numpy==1.26.*
+pandas==2.1.*
+scikit-learn==1.4.*
+scipy==1.11.*
+statsmodels==0.14.2
+matplotlib==3.8.*
+pytest>=8

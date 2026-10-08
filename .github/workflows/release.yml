@@ -1,0 +1,46 @@
+# Continuous delivery of versions: pushing a tag such as v0.1.0 tests the code again,
+# builds the wheel and source archive, and publishes them as a GitHub release whose
+# notes are the matching section of CHANGELOG.md.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Check that the tag matches the package version
+        id: version
+        run: |
+          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match the package version $version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - run: python -m pip install -e ".[dev]" build twine
+      - run: pytest
+      - run: python -m build
+      - run: twine check --strict dist/*
+      - name: Release notes from CHANGELOG.md
+        run: |
+          awk -v v="${{ steps.version.outputs.version }}" \
+            '/^## \[/ { keep = index($0, "[" v "]") > 0; next } keep' CHANGELOG.md > notes.md
+          test -s notes.md
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "$GITHUB_REF_NAME" dist/*
+          --title "ctgame-analytics $GITHUB_REF_NAME" --notes-file notes.md --verify-tag
