@@ -13,6 +13,7 @@ except PackageNotFoundError:  # pragma: no cover - running from a source tree
 
 from .features import skill_features, success_matrix
 from .profiles import ClusterResult, NMFResult, cluster_profiles, fit_nmf
+from .recommend import recommend_all, recommend_next
 from .schema import SchemaError, validate_logs, validate_tasks
 from .simulate import SimulatedStudy, simulate_logs, simulate_pilot
 
@@ -24,6 +25,8 @@ __all__ = [
     "__version__",
     "cluster_profiles",
     "fit_nmf",
+    "recommend_all",
+    "recommend_next",
     "simulate_logs",
     "simulate_pilot",
     "skill_features",
