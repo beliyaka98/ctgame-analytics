@@ -11,6 +11,7 @@ try:
 except PackageNotFoundError:  # pragma: no cover - running from a source tree
     __version__ = "0.0.0"
 
+from .features import skill_features, success_matrix
 from .schema import SchemaError, validate_logs, validate_tasks
 from .simulate import SimulatedStudy, simulate_logs, simulate_pilot
 
@@ -20,6 +21,8 @@ __all__ = [
     "__version__",
     "simulate_logs",
     "simulate_pilot",
+    "skill_features",
+    "success_matrix",
     "validate_logs",
     "validate_tasks",
 ]

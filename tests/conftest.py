@@ -3,12 +3,17 @@
 import pandas as pd
 import pytest
 
-from ctgame import SimulatedStudy, simulate_logs, simulate_pilot
+from ctgame import SimulatedStudy, simulate_logs, simulate_pilot, success_matrix
 
 
 @pytest.fixture(scope="session")
 def study() -> SimulatedStudy:
     return simulate_logs(n_students=120, n_tasks=40, n_profiles=3, seed=42)
+
+
+@pytest.fixture(scope="session")
+def observed(study: SimulatedStudy) -> pd.DataFrame:
+    return success_matrix(study.logs)
 
 
 @pytest.fixture(scope="session")
