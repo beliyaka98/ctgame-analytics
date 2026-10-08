@@ -12,10 +12,14 @@ except PackageNotFoundError:  # pragma: no cover - running from a source tree
     __version__ = "0.0.0"
 
 from .schema import SchemaError, validate_logs, validate_tasks
+from .simulate import SimulatedStudy, simulate_logs, simulate_pilot
 
 __all__ = [
     "SchemaError",
+    "SimulatedStudy",
     "__version__",
+    "simulate_logs",
+    "simulate_pilot",
     "validate_logs",
     "validate_tasks",
 ]

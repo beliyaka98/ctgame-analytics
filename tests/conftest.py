@@ -1,7 +1,19 @@
-"""Shared fixtures."""
+"""Shared fixtures: one synthetic study and one pilot, generated once per test session."""
 
 import pandas as pd
 import pytest
+
+from ctgame import SimulatedStudy, simulate_logs, simulate_pilot
+
+
+@pytest.fixture(scope="session")
+def study() -> SimulatedStudy:
+    return simulate_logs(n_students=120, n_tasks=40, n_profiles=3, seed=42)
+
+
+@pytest.fixture(scope="session")
+def pilot() -> pd.DataFrame:
+    return simulate_pilot(n_per_group=30, effect=5.0, seed=7)
 
 
 @pytest.fixture
