@@ -10,6 +10,7 @@ from pathlib import Path
 import pandas as pd
 
 from . import __version__
+from .evaluate import compare_components
 from .features import skill_features, success_matrix
 from .profiles import cluster_profiles, fit_nmf
 from .recommend import DEFAULT_TARGET, recommend_next
@@ -62,6 +63,20 @@ def _recommend(args: argparse.Namespace) -> int:
     nmf = fit_nmf(observed, n_components=args.components, seed=args.seed)
     table = recommend_next(nmf.predict(), observed, args.student, n=args.n, target=args.target)
     print(table.round(3).to_string(index=False))
+    return 0
+
+
+def _evaluate(args: argparse.Namespace) -> int:
+    observed = success_matrix(pd.read_csv(args.logs))
+    table = compare_components(
+        observed, components=args.components, test_share=args.test_share, seed=args.seed
+    )
+    print(table.round(4).to_string(index=False))
+    best = table.loc[table["rmse_nmf"].idxmin()]
+    print(
+        f"best: {int(best['n_components'])} factors, hold-out RMSE {best['rmse_nmf']:.4f} "
+        f"vs baseline {best['rmse_baseline']:.4f} ({best['improvement']:.1%} lower)"
+    )
     return 0
 
 
@@ -123,6 +138,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--components", type=int, default=3)
     p.add_argument("--seed", type=int, default=0)
     p.set_defaults(func=_recommend)
+
+    p = sub.add_parser("evaluate", help="hold-out RMSE of NMF for several numbers of factors")
+    p.add_argument("--logs", required=True)
+    p.add_argument("--components", type=int, nargs="+", default=[1, 2, 3, 4, 5])
+    p.add_argument("--test-share", type=float, default=0.2, help="share of cells to hide")
+    p.add_argument("--seed", type=int, default=0)
+    p.set_defaults(func=_evaluate)
 
     p = sub.add_parser("ancova", help="compare pilot groups, adjusting for the pre-test")
     p.add_argument("--data", required=True)

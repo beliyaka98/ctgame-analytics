@@ -72,6 +72,19 @@ def test_recommend(data_dir, capsys):
     assert len(lines) == 3
 
 
+def test_evaluate(data_dir, capsys):
+    code = main(["evaluate", "--logs", str(data_dir / "logs.csv"), "--components", "1", "3"])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert out.splitlines()[0].split() == [
+        "n_components",
+        "rmse_nmf",
+        "rmse_baseline",
+        "improvement",
+    ]
+    assert "best: " in out
+
+
 def test_ancova(data_dir, capsys):
     assert main(["ancova", "--data", str(data_dir / "pilot.csv")]) == 0
     out = capsys.readouterr().out
@@ -102,6 +115,8 @@ def test_report(data_dir, tmp_path, capsys):
     summary = json.loads((out / "summary.json").read_text(encoding="utf-8"))
     assert summary["data"]["students"] == 60
     assert summary["nmf"]["converged"] is True
+    assert summary["nmf"]["holdout_rmse"] < summary["nmf"]["baseline_rmse"]
+    assert "held-out attempts" in page
 
 
 def test_build_report_returns_the_summary(data_dir, tmp_path):

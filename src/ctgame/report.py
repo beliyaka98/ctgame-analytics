@@ -10,6 +10,7 @@ from typing import Any
 import pandas as pd
 
 from . import __version__
+from .evaluate import evaluate_holdout
 from .features import skill_features, success_matrix
 from .profiles import cluster_profiles, fit_nmf
 from .recommend import DEFAULT_TARGET, recommend_all
@@ -47,6 +48,7 @@ def build_report(
 
     observed = success_matrix(logs)
     nmf = fit_nmf(observed, n_components=n_components, seed=seed)
+    holdout = evaluate_holdout(observed, n_components=n_components, seed=seed)
     clusters = cluster_profiles(skill_features(logs, tasks), seed=seed)
     recs = recommend_all(nmf.predict(), observed, n=3, target=DEFAULT_TARGET)
     pilot_test = ancova(pilot)
@@ -74,6 +76,9 @@ def build_report(
             "rmse": round(nmf.rmse, 4),
             "iterations": len(nmf.rmse_history),
             "converged": nmf.converged,
+            "holdout_rmse": round(holdout.rmse_nmf, 4),
+            "baseline_rmse": round(holdout.rmse_baseline, 4),
+            "holdout_improvement": round(holdout.improvement, 3),
         },
         "clusters": {
             "k": clusters.n_clusters,
@@ -118,7 +123,9 @@ img{{max-width:100%;height:auto}} .t{{border-collapse:collapse;font-size:.85rem}
 {data["observed_share"]:.0%} of student-task pairs were tried.</p>
 <h2>2. Latent skill factors (masked NMF)</h2>
 <p>{nmf["components"]} factors, RMSE on observed cells = {nmf["rmse"]},
-{nmf["iterations"]} iterations, converged: {nmf["converged"]}.</p>
+{nmf["iterations"]} iterations, converged: {nmf["converged"]}.
+On 20% held-out attempts the prediction error is {nmf["holdout_rmse"]} against
+{nmf["baseline_rmse"]} for the task-mean baseline ({nmf["holdout_improvement"]:.0%} lower).</p>
 <img src="task_factors.png" alt="Heatmap of NMF task factors">
 <h2>3. Learner profiles (PCA + K-means)</h2>
 <p>Best k = {cl["k"]} by silhouette; cluster sizes {cl["sizes"]}.</p>
