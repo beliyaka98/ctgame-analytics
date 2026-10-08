@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ctgame-analytics"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Learner profiling, next-task recommendation and pilot evaluation for game-based critical-thinking tasks"
 readme = "README.md"
 license = "MIT"

@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-08
+
 ### Added
 - Validation of attempt logs and the task catalogue that lists every problem at once (`ctgame.schema`).
 - Simulator of game-task logs and pre/post pilots with a known ground truth (`ctgame.simulate`).
@@ -19,3 +21,6 @@ All notable changes to this project are documented here. The format follows
 - Figures, an HTML report and the `ctgame` command-line tool.
 - CI/CD: lint, type check, tests on Linux/Windows/macOS with Python 3.11–3.14 and with the oldest
   dependencies, wheel build, demo report deployed to GitHub Pages, releases on tags.
+
+[Unreleased]: https://github.com/beliyaka98/ctgame-analytics/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/beliyaka98/ctgame-analytics/releases/tag/v0.1.0

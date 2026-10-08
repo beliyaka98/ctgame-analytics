@@ -6,6 +6,8 @@ authors:
   - family-names: Sarsenbek
     given-names: Akniyet
     affiliation: "Astana IT University"
+version: 0.1.0
+date-released: "2026-10-08"
 license: MIT
 repository-code: "https://github.com/beliyaka98/ctgame-analytics"
 url: "https://beliyaka98.github.io/ctgame-analytics/"
