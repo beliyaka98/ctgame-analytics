@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# Tools
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Outputs of the command-line tool (re-created by `ctgame simulate` / `ctgame report`)
+data/
+results/
+site/
+
+# Real study data must never be committed (personal data of minors)
+*.xlsx
+private/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
