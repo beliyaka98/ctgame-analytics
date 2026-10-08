@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "ctgame-analytics: learner profiling, next-task recommendation and pilot evaluation for game-based critical-thinking tasks"
+type: software
+authors:
+  - family-names: Sarsenbek
+    given-names: Akniyet
+    affiliation: "Astana IT University"
+license: MIT
+repository-code: "https://github.com/beliyaka98/ctgame-analytics"
+url: "https://beliyaka98.github.io/ctgame-analytics/"
+keywords:
+  - educational data mining
+  - critical thinking
+  - non-negative matrix factorisation
+  - k-means
+  - ANCOVA
+  - recommender systems

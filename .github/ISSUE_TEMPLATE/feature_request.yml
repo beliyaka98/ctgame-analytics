@@ -1,0 +1,23 @@
+name: Feature or research task
+description: A new method, analysis or improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should become possible, and why does the thesis need it?
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      description: How will we know it works? (test, metric, figure)
+    validations:
+      required: true
+  - type: textarea
+    id: refs
+    attributes:
+      label: References
+      description: Papers or documentation for the method, if any.
