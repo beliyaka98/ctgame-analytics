@@ -11,4 +11,11 @@ try:
 except PackageNotFoundError:  # pragma: no cover - running from a source tree
     __version__ = "0.0.0"
 
-__all__ = ["__version__"]
+from .schema import SchemaError, validate_logs, validate_tasks
+
+__all__ = [
+    "SchemaError",
+    "__version__",
+    "validate_logs",
+    "validate_tasks",
+]
