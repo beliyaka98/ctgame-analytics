@@ -68,9 +68,9 @@ F(1, 57) = 11.16, p = .001, partial eta^2 = 0.16; adjusted difference = 4.04 [95
 import ctgame as cg
 
 study = cg.simulate_logs(n_students=120, n_tasks=40, seed=42)
-observed = cg.success_matrix(study.logs)              # NaN = task not tried
+observed = cg.success_matrix(study.logs)  # NaN = task not tried
 
-nmf = cg.fit_nmf(observed, n_components=3)            # masked NMF
+nmf = cg.fit_nmf(observed, n_components=3)  # masked NMF
 print(cg.recommend_next(nmf.predict(), observed, "S001", n=3))
 
 profiles = cg.cluster_profiles(cg.skill_features(study.logs, study.tasks))
