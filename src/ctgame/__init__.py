@@ -11,6 +11,7 @@ try:
 except PackageNotFoundError:  # pragma: no cover - running from a source tree
     __version__ = "0.0.0"
 
+from .evaluate import HoldoutResult, compare_components, evaluate_holdout
 from .features import skill_features, success_matrix
 from .profiles import ClusterResult, NMFResult, cluster_profiles, fit_nmf
 from .recommend import recommend_all, recommend_next
@@ -21,12 +22,15 @@ from .stats import AncovaResult, ancova
 __all__ = [
     "AncovaResult",
     "ClusterResult",
+    "HoldoutResult",
     "NMFResult",
     "SchemaError",
     "SimulatedStudy",
     "__version__",
     "ancova",
     "cluster_profiles",
+    "compare_components",
+    "evaluate_holdout",
     "fit_nmf",
     "recommend_all",
     "recommend_next",

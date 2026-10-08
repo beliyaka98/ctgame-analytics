@@ -13,6 +13,8 @@ All notable changes to this project are documented here. The format follows
 - Masked NMF that ignores untried tasks, and PCA + K-means learner profiles with k chosen by
   silhouette (`ctgame.profiles`).
 - Next-task recommendation by distance to a target success of 0.7 (`ctgame.recommend`).
+- Hold-out evaluation of the success predictions against a task-mean baseline, and the
+  `ctgame evaluate` command that compares numbers of NMF factors (`ctgame.evaluate`, #1).
 - One-way ANCOVA with adjusted means, effect size and assumption checks (`ctgame.stats`).
 - Figures, an HTML report and the `ctgame` command-line tool.
 - CI/CD: lint, type check, tests on Linux/Windows/macOS with Python 3.11–3.14 and with the oldest
