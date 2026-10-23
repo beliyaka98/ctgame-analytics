@@ -1,0 +1,58 @@
+# Jenkins configuration as code: security, the multibranch job and its trigger.
+# The admin password comes from the JENKINS_ADMIN_PASSWORD variable (ci/jenkins/.env, not in Git).
+jenkins:
+  systemMessage: >-
+    CI/CD of ctgame-analytics. This server is configured as code from ci/jenkins/ in
+    https://github.com/beliyaka98/ctgame-analytics
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: admin
+          name: Akniyet Sarsenbek
+          password: ${JENKINS_ADMIN_PASSWORD}
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: true # the port is bound to 127.0.0.1 only
+
+unclassified:
+  location:
+    url: http://localhost:8080/
+
+jobs:
+  - script: |
+      multibranchPipelineJob('ctgame-analytics') {
+        displayName('ctgame-analytics')
+        description('Lint, unit tests, Docker image and k3s deployment for every commit of https://github.com/beliyaka98/ctgame-analytics')
+        branchSources {
+          branchSource {
+            source {
+              git {
+                id('ctgame-analytics-github')
+                remote('https://github.com/beliyaka98/ctgame-analytics.git')
+                traits {
+                  gitBranchDiscovery()
+                }
+              }
+            }
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+        // A local Jenkins cannot receive GitHub webhooks, so it checks the repository every
+        // minute and builds each branch whose head commit has changed.
+        triggers {
+          periodicFolderTrigger {
+            interval('1m')
+          }
+        }
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(5)
+          }
+        }
+      }

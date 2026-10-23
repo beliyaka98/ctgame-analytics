@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- `Dockerfile`: a multi-stage image of the `ctgame` CLI with the library versions locked in
+  `requirements/runtime.txt`, running as a non-root user.
+- `Jenkinsfile`: a declarative pipeline for every commit on every branch (static checks, unit
+  tests with JUnit and coverage reports, image build, the analysis run inside the image) and, on
+  `main`, image push and deployment to a Kubernetes test cluster with a rollback on failure.
+- `ci/jenkins/`: a local Jenkins, an image registry and a k3s cluster in Docker Compose, with
+  Jenkins configured as code.
+- `deploy/k8s/`: Kubernetes manifests of the test environment that serves the HTML report.
+
 ## [0.1.0] - 2026-10-08
 
 ### Added

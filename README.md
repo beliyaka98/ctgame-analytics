@@ -81,6 +81,21 @@ result = cg.ancova(cg.simulate_pilot(effect=5.0))
 print(result.summary(), result.assumptions_met)
 ```
 
+## Docker
+
+The [`Dockerfile`](Dockerfile) packs the command-line tool with Python 3.13 and the exact library
+versions from [`requirements/runtime.txt`](requirements/runtime.txt), so the analysis gives the same
+numbers on any machine:
+
+```bash
+docker build -t ctgame-analytics .
+docker run --rm ctgame-analytics --version
+docker run --rm -v "$PWD/out:/work" ctgame-analytics simulate --out /work/data
+docker run --rm -v "$PWD/out:/work" ctgame-analytics report --data /work/data --out /work/site
+```
+
+The image runs as a non-root user and contains only the installed wheel, not the source tree.
+
 ## Input data
 
 | File | One row per | Required columns |
@@ -119,9 +134,13 @@ prediction error is **14.8% lower** than the task-mean baseline (RMSE 0.373 vs 0
 ```text
 src/ctgame/         package: schema, simulate, features, profiles, recommend, evaluate, stats, viz, report, cli
 tests/              pytest suite (unit, cross-checks against scikit-learn/numpy, end-to-end CLI)
-requirements/       oldest supported dependency versions (tested in CI)
+requirements/       oldest supported versions (tested in CI) and the runtime lock of the Docker image
 docs/               data format and privacy rules
 .github/workflows/  ci.yml (CI + Pages deployment), release.yml (releases on tags)
+Dockerfile          container image of the ctgame CLI
+Jenkinsfile         Jenkins pipeline: checks, tests, image, push, k3s deployment
+ci/jenkins/         local Jenkins + registry + k3s (Docker Compose, configuration as code)
+deploy/k8s/         Kubernetes manifests of the test environment
 ```
 
 ## Development
@@ -144,6 +163,28 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 | [`ci.yml`](.github/workflows/ci.yml) | push to `main`, pull request | ruff + mypy → pytest on Ubuntu (Python 3.11–3.14), Windows and macOS → pytest with the **oldest** supported dependencies → build and `twine check` the wheel → install that wheel and build the demo report → **deploy to GitHub Pages** (only for `main`) |
 | [`release.yml`](.github/workflows/release.yml) | tag `v*` | checks that the tag equals the package version → tests → builds the wheel and sdist → **creates a GitHub release** with notes from `CHANGELOG.md` |
 | [`dependabot.yml`](.github/dependabot.yml) | monthly | opens a pull request when a GitHub Action has a new version |
+| [`Jenkinsfile`](Jenkinsfile) | every commit on every branch (self-hosted Jenkins) | ruff, mypy and hadolint in parallel → pytest with JUnit and coverage reports → Docker image → the full analysis run inside the image (report archived). On `main` also: push the image to the registry → **deploy to the k3s test cluster** (rollback on failure) → smoke test of the deployed report. Pushing to Docker Hub is an opt-in parameter |
+
+### Self-hosted Jenkins
+
+[`ci/jenkins/`](ci/jenkins) starts the whole CI/CD environment with one command. Jenkins, its
+plugins and the multibranch job are configured as code, so no setup is done by hand in the web UI.
+
+```bash
+cd ci/jenkins
+cp .env.example .env              # set JENKINS_ADMIN_PASSWORD
+docker compose up -d --build      # Jenkins, an image registry and a one-node k3s cluster
+```
+
+| Service | Address | Role |
+|---|---|---|
+| Jenkins 2.580.1 LTS | <http://localhost:8080> | checks GitHub every minute and builds each branch with a new commit |
+| Registry | `localhost:5000` | stores the images built on `main` |
+| k3s v1.31 | `https://localhost:6443` | test cluster; the deployed report is at <http://localhost:30080> |
+
+To also push to Docker Hub, add a *Username with password* credential with the id `dockerhub`
+(Docker Hub user name and access token) in Jenkins and run the `main` build with
+`PUSH_TO_DOCKERHUB` ticked.
 
 ## Limitations
 

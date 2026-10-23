@@ -1,0 +1,70 @@
+# Local CI/CD environment: a Jenkins controller, an image registry and a one-node k3s cluster.
+#
+#   cd ci/jenkins
+#   cp .env.example .env            # then set JENKINS_ADMIN_PASSWORD
+#   docker compose up -d --build
+#
+# Jenkins: http://localhost:8080   registry: localhost:5000   deployed report: http://localhost:30080
+# All ports listen on 127.0.0.1 only.
+name: ctgame-ci
+
+services:
+  jenkins:
+    build: .
+    image: ctgame-jenkins:2.580.1
+    container_name: ctgame-jenkins
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD:?set it in ci/jenkins/.env}
+    group_add:
+      - "0" # Docker Desktop mounts docker.sock as root:root with mode 660
+    volumes:
+      - jenkins-home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - k3s-kubeconfig:/k3s:ro
+    depends_on:
+      - registry
+      - k3s
+
+  registry:
+    image: registry:2.8.3
+    container_name: ctgame-registry
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - registry-data:/var/lib/registry
+
+  k3s:
+    image: rancher/k3s:v1.31.4-k3s1
+    container_name: ctgame-k3s
+    hostname: k3s
+    privileged: true # k3s runs containerd and the kubelet inside this container
+    restart: unless-stopped
+    command:
+      - server
+      - --disable=traefik
+      - --disable=metrics-server
+      - --tls-san=k3s
+      - --node-name=ctgame-test-node
+    environment:
+      K3S_KUBECONFIG_OUTPUT: /output/kubeconfig.yaml
+      K3S_KUBECONFIG_MODE: "644"
+    tmpfs:
+      - /run
+      - /var/run
+    ports:
+      - "127.0.0.1:6443:6443"
+      - "127.0.0.1:30080:30080"
+    volumes:
+      - k3s-data:/var/lib/rancher/k3s
+      - k3s-kubeconfig:/output
+      - ./k3s-registries.yaml:/etc/rancher/k3s/registries.yaml:ro
+
+volumes:
+  jenkins-home:
+  registry-data:
+  k3s-data:
+  k3s-kubeconfig:
