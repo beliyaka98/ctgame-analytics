@@ -20,6 +20,12 @@ data/
 results/
 site/
 
+# CI/CD: test reports, the copied kubeconfig and the local Jenkins secrets
+reports/
+deployed.html
+.kube/
+ci/jenkins/.env
+
 # Real study data must never be committed (personal data of minors)
 *.xlsx
 private/
