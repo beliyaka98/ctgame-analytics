@@ -196,7 +196,11 @@ pipeline {
                         -o jsonpath='{.spec.template.spec.containers[0].image}')
                     echo "deployed image: $deployed"
                     test "$deployed" = "$REGISTRY/$IMAGE:$TAG"
-                    curl -fsS --retry 10 --retry-delay 3 --retry-all-errors http://k3s:30080/ -o deployed.html
+
+                    served=$(curl -fsS --retry 10 --retry-delay 3 --retry-all-errors http://k3s:30080/version.txt)
+                    echo "served commit: $served"
+                    test "$served" = "$GIT_SHA"
+                    curl -fsS http://k3s:30080/ -o deployed.html
                     grep -q "ctgame" deployed.html
                     kubectl -n "$NAMESPACE" rollout history deployment/ctgame-report
                 '''
