@@ -38,8 +38,17 @@ spec:
         - name: analysis
           image: ctgame-analytics:latest
           command: ["sh", "-c"]
+          # version.txt tells the smoke test which commit the cluster actually serves.
           args:
-            - ctgame simulate --out /tmp/data && ctgame report --data /tmp/data --out /report
+            - >-
+              ctgame simulate --out /tmp/data &&
+              ctgame report --data /tmp/data --out /report &&
+              echo "$GIT_COMMIT" > /report/version.txt
+          env:
+            - name: GIT_COMMIT
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['ci/git-commit']
           resources:
             requests: { cpu: 250m, memory: 256Mi }
             limits: { cpu: "1", memory: 1Gi }
