@@ -19,15 +19,6 @@ RUN python -m build --wheel --outdir /dist
 # ---- runtime: only the installed wheel, no compilers and no source tree -------------------------
 FROM python:${PYTHON_VERSION}-slim AS runtime
 
-ARG VERSION=dev
-ARG VCS_REF=unknown
-LABEL org.opencontainers.image.title="ctgame-analytics" \
-      org.opencontainers.image.description="Learner profiling, next-task recommendation and pilot evaluation for game-based critical-thinking tasks" \
-      org.opencontainers.image.source="https://github.com/beliyaka98/ctgame-analytics" \
-      org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.revision="${VCS_REF}"
-
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     MPLBACKEND=Agg \
@@ -42,6 +33,17 @@ RUN pip install --no-cache-dir -r /tmp/runtime.txt \
 # Then the package itself; --no-deps keeps the locked versions untouched.
 COPY --from=build /dist/*.whl /tmp/
 RUN pip install --no-cache-dir --no-deps /tmp/*.whl && rm /tmp/*.whl /tmp/runtime.txt
+
+# Build arguments change on every commit, and every RUN after an ARG is rebuilt when its value
+# changes. Declaring them here, after the installs, keeps the dependency layers cached.
+ARG VERSION=dev
+ARG VCS_REF=unknown
+LABEL org.opencontainers.image.title="ctgame-analytics" \
+      org.opencontainers.image.description="Learner profiling, next-task recommendation and pilot evaluation for game-based critical-thinking tasks" \
+      org.opencontainers.image.source="https://github.com/beliyaka98/ctgame-analytics" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.revision="${VCS_REF}"
 
 # Never run the analysis as root: real pilot data are personal data of minors.
 USER 10001
