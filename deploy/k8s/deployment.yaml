@@ -1,0 +1,77 @@
+# Test environment of the analysis. The init container runs the whole research pipeline on
+# synthetic data (simulate -> report); the web container serves the resulting HTML report.
+# Both use the same image. Jenkins sets the image tag and the two placeholders on each deployment.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctgame-report
+  namespace: ctgame-test
+  labels:
+    app.kubernetes.io/name: ctgame-report
+    app.kubernetes.io/part-of: ctgame-analytics
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0 # the old report stays online until the new one is ready
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ctgame-report
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ctgame-report
+        app.kubernetes.io/part-of: ctgame-analytics
+      annotations:
+        ci/git-commit: "GIT_COMMIT_PLACEHOLDER"
+        ci/build-url: "BUILD_URL_PLACEHOLDER"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      initContainers:
+        - name: analysis
+          image: ctgame-analytics:latest
+          command: ["sh", "-c"]
+          args:
+            - ctgame simulate --out /tmp/data && ctgame report --data /tmp/data --out /report
+          resources:
+            requests: { cpu: 250m, memory: 256Mi }
+            limits: { cpu: "1", memory: 1Gi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          volumeMounts:
+            - { name: report, mountPath: /report }
+            - { name: tmp, mountPath: /tmp }
+      containers:
+        - name: web
+          image: ctgame-analytics:latest
+          command: ["python", "-m", "http.server", "8000", "--directory", "/report"]
+          ports:
+            - { name: http, containerPort: 8000 }
+          readinessProbe:
+            httpGet: { path: /, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 250m, memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          volumeMounts:
+            - { name: report, mountPath: /report, readOnly: true }
+      volumes:
+        - { name: report, emptyDir: {} }
+        - { name: tmp, emptyDir: {} }
