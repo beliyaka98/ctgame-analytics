@@ -1,0 +1,6 @@
+# k3s pulls images named localhost:5000/... from the registry service over plain HTTP inside the
+# Compose network, so Jenkins (on the host's Docker) and the cluster use the same image name.
+mirrors:
+  "localhost:5000":
+    endpoint:
+      - "http://registry:5000"
